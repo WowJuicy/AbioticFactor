@@ -12,7 +12,6 @@ Writes site/index.html, site/item/*.html, site/assets/..., site/images/...
 from __future__ import annotations
 
 import json
-import os
 import re
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -41,7 +40,6 @@ def slugify(name: str) -> str:
 
 
 def cargo_all_item_images() -> dict[str, str]:
-    """Return {item_name: image_filename} from Cargo Items table."""
     mapping: dict[str, str] = {}
     offset = 0
     while True:
@@ -118,7 +116,6 @@ CSS = r"""
   --text: #e8ecf4;
   --muted: #9aa3b5;
   --accent: #5b9dff;
-  --accent-2: #3d7aed;
   --border: #2e3648;
   --shadow: 0 8px 24px rgba(0,0,0,.35);
   --radius: 14px;
@@ -185,7 +182,6 @@ header.site-header h1 {
   font-size: 0.95rem;
 }
 
-/* Responsive item grid */
 .item-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
@@ -229,7 +225,6 @@ header.site-header h1 {
   width: 72%;
   height: 72%;
   object-fit: contain;
-  image-rendering: auto;
   pointer-events: none;
 }
 
@@ -238,7 +233,6 @@ header.site-header h1 {
   color: var(--muted);
 }
 
-/* Hover name tooltip */
 .item-card .tip {
   position: absolute;
   left: 50%;
@@ -269,7 +263,6 @@ header.site-header h1 {
 
 .item-card.hidden { display: none; }
 
-/* Detail page */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -314,16 +307,6 @@ header.site-header h1 {
 .section h2 {
   margin: 0 0 12px;
   font-size: 1.15rem;
-  letter-spacing: -0.01em;
-}
-
-.guide-text {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px 18px;
-  color: var(--text);
-  white-space: pre-wrap;
 }
 
 .video-list {
@@ -341,14 +324,8 @@ header.site-header h1 {
 
 .video-card h3 {
   margin: 0;
-  padding: 12px 16px 0;
+  padding: 12px 16px 10px;
   font-size: 1rem;
-}
-
-.video-card .note {
-  margin: 6px 16px 10px;
-  color: var(--muted);
-  font-size: 0.9rem;
 }
 
 .video-embed {
@@ -385,7 +362,6 @@ INDEX_JS = r"""
   const input = document.getElementById("filter");
   const cards = Array.from(document.querySelectorAll(".item-card"));
   if (!input) return;
-
   input.addEventListener("input", () => {
     const q = input.value.trim().toLowerCase();
     cards.forEach((card) => {
@@ -395,6 +371,15 @@ INDEX_JS = r"""
   });
 })();
 """
+
+
+def html_escape(s: str) -> str:
+    return (
+        s.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
 
 
 def render_index(site_title: str, items: list[dict]) -> str:
@@ -418,7 +403,7 @@ def render_index(site_title: str, items: list[dict]) -> str:
     cards_html = (
         "\n        ".join(cards)
         if cards
-        else '<p class="empty-state">No items yet. Edit items.json and run generate_site.py.</p>'
+        else '<p class="empty-state">No items yet. Edit items.json and push to update.</p>'
     )
 
     return f"""<!DOCTYPE html>
@@ -435,7 +420,7 @@ def render_index(site_title: str, items: list[dict]) -> str:
     <header class="site-header">
       <div>
         <h1>{html_escape(site_title)}</h1>
-        <p class="subtitle">Click an item for videos and text guides</p>
+        <p class="subtitle">Click an item for videos</p>
       </div>
       <div class="search-box">
         <input id="filter" type="search" placeholder="Filter items..." autocomplete="off">
@@ -448,7 +433,6 @@ def render_index(site_title: str, items: list[dict]) -> str:
 
     <footer>
       Item icons from <a href="https://abioticfactor.wiki.gg/" target="_blank" rel="noopener">Abiotic Factor Wiki</a>.
-      Edit <code>items.json</code> then run <code>python generate_site.py</code> to update.
     </footer>
   </div>
   <script src="assets/index.js"></script>
@@ -460,7 +444,6 @@ def render_index(site_title: str, items: list[dict]) -> str:
 def render_item_page(site_title: str, item: dict) -> str:
     name = item["name"]
     img = item.get("local_image")
-    text_guide = (item.get("text_guide") or "").strip()
     videos = item.get("videos") or []
 
     img_html = (
@@ -469,29 +452,23 @@ def render_item_page(site_title: str, item: dict) -> str:
         else '<div class="placeholder" style="width:96px;height:96px;display:grid;place-items:center;background:var(--panel-2);border-radius:12px">?</div>'
     )
 
-    if text_guide:
-        guide_html = f'<div class="guide-text">{html_escape(text_guide)}</div>'
-    else:
-        guide_html = '<p class="empty-state">No text guide yet.</p>'
-
     video_blocks = []
     for v in videos:
         vid = (v.get("youtube_id") or "").strip()
         title = (v.get("title") or "Video").strip()
-        note = (v.get("note") or "").strip()
+
         if not vid or vid.startswith("REPLACE_"):
             video_blocks.append(
                 f'''<article class="video-card">
   <h3>{html_escape(title)}</h3>
-  <p class="note">Add a real YouTube video ID in items.json for this entry.</p>
+  <p class="empty-state" style="padding:0 16px 16px">Add a YouTube video ID in items.json.</p>
 </article>'''
             )
             continue
-        note_html = f'<p class="note">{html_escape(note)}</p>' if note else ""
+
         video_blocks.append(
             f'''<article class="video-card">
   <h3>{html_escape(title)}</h3>
-  {note_html}
   <div class="video-embed">
     <iframe
       src="https://www.youtube.com/embed/{html_escape(vid)}"
@@ -532,11 +509,6 @@ def render_item_page(site_title: str, item: dict) -> str:
     </div>
 
     <section class="section">
-      <h2>Text guide</h2>
-      {guide_html}
-    </section>
-
-    <section class="section">
       <h2>Videos</h2>
       <div class="video-list">
         {videos_html}
@@ -550,15 +522,6 @@ def render_item_page(site_title: str, item: dict) -> str:
 </body>
 </html>
 """
-
-
-def html_escape(s: str) -> str:
-    return (
-        s.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
 
 
 def main() -> int:
@@ -597,7 +560,6 @@ def main() -> int:
         item = {
             "name": name,
             "slug": slug,
-            "text_guide": entry.get("text_guide") or "",
             "videos": entry.get("videos") or [],
             "wiki_image": wiki_image,
             "local_image": local,
@@ -619,7 +581,6 @@ def main() -> int:
 
     (SITE_DIR / "assets" / "style.css").write_text(CSS, encoding="utf-8")
     (SITE_DIR / "assets" / "index.js").write_text(INDEX_JS, encoding="utf-8")
-
     (SITE_DIR / "index.html").write_text(
         render_index(site_title, items), encoding="utf-8"
     )
@@ -627,10 +588,7 @@ def main() -> int:
         path = ITEM_DIR / f"{item['slug']}.html"
         path.write_text(render_item_page(site_title, item), encoding="utf-8")
 
-    print(f"\nDone. Open via a local server (not file://):")
-    print(f"  cd {SITE_DIR}")
-    print("  python -m http.server 8000")
-    print("  then visit http://localhost:8000")
+    print(f"\nDone. Site written to {SITE_DIR}")
     return 0
 
 
