@@ -2,23 +2,23 @@
   "site_title": "Abiotic Factor - Where to Get Items",
   "items": [
     {
-      "name": "Jailbroken CPU",
-      "text_guide": "...",
-      "videos": [
-        {
-          "title": "Where to find Jailbroken CPUs",
-          "youtube_id": "HIUWF-5Cbe8",
-          "note": "..."
-        }
-      ]
-    },
-    {
       "name": "Security Bot CPU",
       "text_guide": "...",
       "videos": [
         {
           "title": "Where to find Security Bot CPUs",
           "youtube_id": "3aEGSphnfr0&list=PLsleQr6y6z2foTynWOgfZl2nMrW9XqEPv&index=77",
+          "note": "..."
+        }
+      ]
+    },
+    {
+      "name": "Jailbroken CPU",
+      "text_guide": "...",
+      "videos": [
+        {
+          "title": "Where to find Jailbroken CPUs",
+          "youtube_id": "HIUWF-5Cbe8",
           "note": "..."
         }
       ]
