@@ -455,24 +455,20 @@ def render_item_page(site_title: str, item: dict) -> str:
     video_blocks = []
     for v in videos:
         vid = (v.get("youtube_id") or "").strip()
-        title = (v.get("title") or "Video").strip()
-
         if not vid or vid.startswith("REPLACE_"):
             video_blocks.append(
-                f'''<article class="video-card">
-  <h3>{html_escape(title)}</h3>
-  <p class="empty-state" style="padding:0 16px 16px">Add a YouTube video ID in items.json.</p>
+                '''<article class="video-card">
+  <p class="empty-state" style="padding:16px">Add a YouTube video ID in items.json.</p>
 </article>'''
             )
             continue
 
         video_blocks.append(
             f'''<article class="video-card">
-  <h3>{html_escape(title)}</h3>
   <div class="video-embed">
     <iframe
       src="https://www.youtube.com/embed/{html_escape(vid)}"
-      title="{html_escape(title)}"
+      title="YouTube video"
       frameborder="0"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
       referrerpolicy="strict-origin-when-cross-origin"
