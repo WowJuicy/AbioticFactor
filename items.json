@@ -1,11 +1,10 @@
 {
-  "site_title": "Abiotic Factor - Where to Get Items",
+  "site_title": "Abiotic Factor - Item Locations",
   "items": [
     {
       "name": "Security Bot CPU",
       "videos": [
         {
-          "title": "Where to find Security Bot CPUs",
           "youtube_id": "3aEGSphnfr0"
         }
       ]
@@ -14,7 +13,6 @@
       "name": "Jailbroken CPU",
       "videos": [
         {
-          "title": "Where to find Jailbroken CPUs",
           "youtube_id": "HIUWF-5Cbe8"
         }
       ]
