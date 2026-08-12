@@ -3,23 +3,19 @@
   "items": [
     {
       "name": "Security Bot CPU",
-      "text_guide": "...",
       "videos": [
         {
           "title": "Where to find Security Bot CPUs",
           "youtube_id": "3aEGSphnfr0",
-          "note": "..."
         }
       ]
     },
     {
       "name": "Jailbroken CPU",
-      "text_guide": "...",
       "videos": [
         {
           "title": "Where to find Jailbroken CPUs",
           "youtube_id": "HIUWF-5Cbe8",
-          "note": "..."
         }
       ]
     }
