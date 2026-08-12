@@ -415,9 +415,9 @@ def render_index(site_title: str, items: list[dict]) -> str:
     <footer>
       Item icons from <a href="https://abioticfactor.wiki.gg/" target="_blank" rel="noopener">Abiotic Factor Wiki</a>.
       Videos from
-      <a href="https://www.youtube.com/@ReaperrGamingg" target="_blank" rel="noopener">ReaperrGamingg</a>
+      <a href="https://www.youtube.com/@ReaperrGamingg" target="_blank" rel="noopener">Good Shark</a>
       and
-      <a href="https://www.youtube.com/@Good_Shark" target="_blank" rel="noopener">Good Shark</a>.
+      <a href="https://www.youtube.com/@Good_Shark" target="_blank" rel="noopener">ReaperrGamingg</a>.
     </footer>
   </div>
   <script src="assets/index.js"></script>
