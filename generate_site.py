@@ -7,12 +7,18 @@ Usage:
 
 Reads  items.json
 Writes site/index.html, site/item/*.html, site/assets/..., site/images/...
+
+Custom images (when wiki has none):
+  Put a PNG in custom_images/ named from the item name:
+    lowercase, spaces -> underscores, .png
+  Example: "Security Bot CPU" -> custom_images/security_bot_cpu.png
 """
 
 from __future__ import annotations
 
 import json
 import re
+import shutil
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -21,6 +27,7 @@ import requests
 
 ROOT = Path(__file__).resolve().parent
 ITEMS_FILE = ROOT / "items.json"
+CUSTOM_IMG_DIR = ROOT / "custom_images"
 SITE_DIR = ROOT / "site"
 IMG_DIR = SITE_DIR / "images"
 ITEM_DIR = SITE_DIR / "item"
@@ -37,6 +44,14 @@ def slugify(name: str) -> str:
     s = re.sub(r"[^\w\s-]", "", s)
     s = re.sub(r"[-\s]+", "-", s)
     return s.strip("-") or "item"
+
+
+def custom_image_filename(name: str) -> str:
+    """Lowercase name, spaces to underscores, .png"""
+    s = name.strip().lower()
+    s = re.sub(r"\s+", "_", s)
+    s = re.sub(r"[^\w.-]", "", s)  # keep letters, numbers, _, ., -
+    return f"{s}.png"
 
 
 def cargo_all_item_images() -> dict[str, str]:
@@ -92,7 +107,6 @@ def download_image(filename: str, dest: Path) -> bool:
         return True
     url = get_image_url(filename)
     if not url:
-        print(f"  [!] No URL for {filename}")
         return False
     try:
         r = SESSION.get(url, timeout=20)
@@ -106,6 +120,39 @@ def download_image(filename: str, dest: Path) -> bool:
 
 def local_image_name(filename: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_.-]", "_", filename)
+
+
+def resolve_item_image(name: str, wiki_filename: str | None) -> str | None:
+    """
+    1) Try wiki image -> site/images/<sanitized wiki name>
+    2) Else try custom_images/<lowercase_underscored_name>.png
+       and copy into site/images/
+    Returns the filename inside site/images/, or None.
+    """
+    IMG_DIR.mkdir(parents=True, exist_ok=True)
+
+    # --- Wiki ---
+    if wiki_filename:
+        dest_name = local_image_name(wiki_filename)
+        dest = IMG_DIR / dest_name
+        if download_image(wiki_filename, dest):
+            return dest_name
+        print(f"  [!] Wiki image missing for '{name}' ({wiki_filename})")
+
+    # --- Custom fallback ---
+    custom_name = custom_image_filename(name)
+    custom_src = CUSTOM_IMG_DIR / custom_name
+    if custom_src.is_file():
+        dest = IMG_DIR / custom_name
+        shutil.copy2(custom_src, dest)
+        print(f"  [+] Custom image for '{name}': {custom_name}")
+        return custom_name
+
+    print(
+        f"  [!] No image for '{name}'. "
+        f"Add custom_images/{custom_name}"
+    )
+    return None
 
 
 CSS = r"""
@@ -300,32 +347,9 @@ header.site-header h1 {
   font-size: clamp(1.4rem, 3vw, 1.9rem);
 }
 
-.section {
-  margin-bottom: 32px;
-}
-
-.section h2 {
-  margin: 0 0 12px;
-  font-size: 1.15rem;
-}
-
 .video-list {
   display: grid;
   gap: 22px;
-}
-
-.video-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-}
-
-.video-card h3 {
-  margin: 0;
-  padding: 12px 16px 10px;
-  font-size: 1rem;
 }
 
 .video-embed {
@@ -333,6 +357,10 @@ header.site-header h1 {
   width: 100%;
   padding-top: 56.25%;
   background: #000;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
 }
 
 .video-embed iframe {
@@ -456,33 +484,22 @@ def render_item_page(site_title: str, item: dict) -> str:
     for v in videos:
         vid = (v.get("youtube_id") or "").strip()
         if not vid or vid.startswith("REPLACE_"):
-            video_blocks.append(
-                '''<article class="video-card">
-  <p class="empty-state" style="padding:16px">Add a YouTube video ID in items.json.</p>
-</article>'''
-            )
             continue
 
         video_blocks.append(
-            f'''<article class="video-card">
-  <div class="video-embed">
-    <iframe
-      src="https://www.youtube.com/embed/{html_escape(vid)}"
-      title="YouTube video"
-      frameborder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      referrerpolicy="strict-origin-when-cross-origin"
-      allowfullscreen
-      loading="lazy"></iframe>
-  </div>
-</article>'''
+            f'''<div class="video-embed">
+  <iframe
+    src="https://www.youtube.com/embed/{html_escape(vid)}"
+    title="YouTube video"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen
+    loading="lazy"></iframe>
+</div>'''
         )
 
-    videos_html = (
-        "\n        ".join(video_blocks)
-        if video_blocks
-        else '<p class="empty-state">No videos listed for this item yet.</p>'
-    )
+    videos_html = "\n        ".join(video_blocks)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -504,16 +521,9 @@ def render_item_page(site_title: str, item: dict) -> str:
       </div>
     </div>
 
-    <section class="section">
-      <h2>Videos</h2>
-      <div class="video-list">
+    <div class="video-list">
         {videos_html}
-      </div>
-    </section>
-
-    <footer>
-      Icons from <a href="https://abioticfactor.wiki.gg/" target="_blank" rel="noopener">Abiotic Factor Wiki</a>.
-    </footer>
+    </div>
   </div>
 </body>
 </html>
@@ -524,6 +534,8 @@ def main() -> int:
     if not ITEMS_FILE.exists():
         print(f"Missing {ITEMS_FILE}")
         return 1
+
+    CUSTOM_IMG_DIR.mkdir(parents=True, exist_ok=True)
 
     data = json.loads(ITEMS_FILE.read_text(encoding="utf-8"))
     site_title = data.get("site_title") or "Abiotic Factor Item Guide"
@@ -542,38 +554,23 @@ def main() -> int:
     ITEM_DIR.mkdir(parents=True, exist_ok=True)
 
     items: list[dict] = []
-    download_jobs: list[tuple[str, Path]] = []
 
+    print("Resolving images...")
     for entry in raw_items:
         name = (entry.get("name") or "").strip()
         if not name:
             continue
-        slug = slugify(name)
-        wiki_image = image_map.get(name) or f"Item Icon - {name}.png"
-        local = local_image_name(wiki_image)
-        dest = IMG_DIR / local
 
-        item = {
+        slug = slugify(name)
+        wiki_image = image_map.get(name)  # may be None
+        local = resolve_item_image(name, wiki_image)
+
+        items.append({
             "name": name,
             "slug": slug,
             "videos": entry.get("videos") or [],
-            "wiki_image": wiki_image,
             "local_image": local,
-        }
-        items.append(item)
-        download_jobs.append((wiki_image, dest))
-
-    print(f"Downloading up to {len(download_jobs)} icons...")
-    ok = 0
-    with ThreadPoolExecutor(max_workers=8) as pool:
-        futures = {
-            pool.submit(download_image, fn, dest): fn
-            for fn, dest in download_jobs
-        }
-        for fut in as_completed(futures):
-            if fut.result():
-                ok += 1
-    print(f"  {ok}/{len(download_jobs)} images ready.")
+        })
 
     (SITE_DIR / "assets" / "style.css").write_text(CSS, encoding="utf-8")
     (SITE_DIR / "assets" / "index.js").write_text(INDEX_JS, encoding="utf-8")
@@ -585,6 +582,7 @@ def main() -> int:
         path.write_text(render_item_page(site_title, item), encoding="utf-8")
 
     print(f"\nDone. Site written to {SITE_DIR}")
+    print(f"Custom images folder: {CUSTOM_IMG_DIR}")
     return 0
 
 
