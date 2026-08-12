@@ -118,6 +118,65 @@
           "youtube_id": "mnyhYM1r7wQ"
         }
       ]
+    },
+    {
+      "name": "Tarasque Ichor",
+      "videos": [
+        {
+          "youtube_id": "k4MNNDEj88k"
+        }
+      ]
+    },
+    {
+      "name": "Photon Receptor",
+      "videos": [
+        {
+          "youtube_id": "SnPBckP5PgM"
+        }
+      ]
+    },
+    {
+      "name": "Reservoir Growth",
+      "videos": [
+        {
+          "youtube_id": "BYFcUtAuOZA"
+        },
+        {
+          "youtube_id": "5xeW2t1ZVCE"
+        }
+      ]
+    },
+    {
+      "name": "Night Essence",
+      "videos": [
+        {
+          "youtube_id": "D8FxwV0eP_E"
+        }
+      ]
+    },
+    {
+      "name": "Egg",
+      "videos": [
+        {
+          "youtube_id": "fXgNcO47i5I"
+        }
+      ]
+    },
+    {
+      "name": "Hexwood",
+      "videos": [
+        {
+          "youtube_id": "MchQxkC5Uc4"
+        }
+      ]
+    },
+    {
+      "name": "Transcendium",
+      "videos": [
+        {
+          "youtube_id": "D0Djz1EzE6g"
+        }
+      ]
     }
   ]
 }
