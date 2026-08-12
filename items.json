@@ -56,6 +56,43 @@
           "youtube_id": "YPIW_XVPkGE"
         }
       ]
+    },
+    {
+      "name": "Neutrino Emitter",
+      "videos": [
+        {
+          "youtube_id": "rXN_okAc8Qo"
+        },
+        {
+          "youtube_id": "DsUW0Cu4KT0"
+        },
+        {
+          "youtube_id": "OPpzagjyykk"
+        }
+      ]
+    },
+    {
+      "name": "Quantum Exchanger",
+      "videos": [
+        {
+          "youtube_id": "zr5ZbLu-Ghc"
+        },
+        {
+          "youtube_id": "tUmk3-sYjrY"
+        },
+        {
+          "youtube_id": "aKNNMUlE7h8"
+        },
+        {
+          "youtube_id": "msAzSW5t-U4"
+        },
+        {
+          "youtube_id": "aT6XcAVqY5M"
+        },
+        {
+          "youtube_id": "mnyhYM1r7wQ"
+        }
+      ]
     }
   ]
 }
