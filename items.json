@@ -40,6 +40,22 @@
           "youtube_id": "CzXRJxUqxIs"
         }
       ]
+    },
+    {
+      "name": "Royal Coin",
+      "videos": [
+        {
+          "youtube_id": "cRJqQipNMGw"
+        }
+      ]
+    },
+    {
+      "name": "Royal Crown",
+      "videos": [
+        {
+          "youtube_id": "YPIW_XVPkGE"
+        }
+      ]
     }
   ]
 }
