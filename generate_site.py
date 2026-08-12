@@ -233,34 +233,6 @@ header.site-header h1 {
   color: var(--muted);
 }
 
-.item-card .tip {
-  position: absolute;
-  left: 50%;
-  bottom: 8px;
-  transform: translateX(-50%) translateY(6px);
-  background: rgba(8,10,16,.92);
-  color: var(--text);
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  white-space: nowrap;
-  max-width: 95%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .12s ease, transform .12s ease;
-  z-index: 2;
-}
-
-.item-card:hover .tip,
-.item-card:focus-visible .tip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
 .item-card.hidden { display: none; }
 
 .back-link {
@@ -377,7 +349,6 @@ def render_index(site_title: str, items: list[dict]) -> str:
         cards.append(
             f'''<a class="item-card" href="item/{slug}.html" data-name="{html_escape(name)}" title="{html_escape(name)}">
   {img_html}
-  <span class="tip">{html_escape(name)}</span>
 </a>'''
         )
 
