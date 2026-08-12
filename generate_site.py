@@ -375,7 +375,7 @@ def render_index(site_title: str, items: list[dict]) -> str:
             else '<div class="placeholder">?</div>'
         )
         cards.append(
-            f'''<a class="item-card" href="item/{slug}.html" data-name="{html_escape(name)}" title="{html_escape(name)}">
+            f'''<a class="item-card" href="item/{slug}.html" data-name="{html_escape(name)}">
   {img_html}
   <span class="tip">{html_escape(name)}</span>
 </a>'''
